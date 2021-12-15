@@ -8,7 +8,7 @@ Use this Stata ado to automatically create a codebook in multiple output formats
 
 <img src="doc/flowchart.jpg">
 
-Just use the cbgen command if you need it quick and easy. Depending on the input file(s), you will get a codebook with slightly different informations in the selected output format. Use the included cbdata and cbout commands separately if you want to add additional information or make changes.
+Just use the `cbgen` command if you need it quick and easy. Depending on the input file(s), you will get a codebook with slightly different informations in the selected output format. Use the included `cbdata` and `cbout` commands separately if you want to add additional information or make changes.
 
 The Stata data set provides on the one hand simple informations about variables, values (and labels). On the other hand it's possible to use informations about number of observations and statistics.
 The LimeSurvey survey file contains more detailed information about the question type and text, hint, filters, question groups and input limits.
@@ -16,7 +16,7 @@ The LimeSurvey survey file contains more detailed information about the question
 
 ### Install
 - not published via ssc for now
-- manualy install by downloading and copy all files to personal ado folder (check path with stata command .sysdir)
+- manualy install by downloading and copy all files to personal ado folder (check path with stata command `sysdir`)
 
 
 ### Howto
