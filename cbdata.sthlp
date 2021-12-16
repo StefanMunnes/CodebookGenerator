@@ -1,5 +1,6 @@
 {smcl}
-{* *! version 0.1  22nov2020}{...}
+{* *! version 0.1  15.12.2021}
+
 {viewerjumpto "Syntax" "cbdata##syntax"}{...}
 {viewerjumpto "Description" "cbdata##description"}{...}
 {viewerjumpto "Options" "cbdata##options"}{...}
@@ -9,7 +10,7 @@
 {title:Title}
 
 {phang}
-{bf:cbdata} {hline 2} Prepare data of LimeSurvey (and Stata) for Codebook
+{bf:cbdata} {hline 2} Prepare data for codebook
 
 {marker syntax}{...}
 {title:Syntax}
@@ -24,43 +25,48 @@
 {marker cbdata_options}{...}
 {synopthdr :options}
 {synoptline}
-{synopt:{opt ls:path( )}}define Folder of LimeSurvey survey file(s){p_end}
+{synopt:{opt ls:path()}}define folder of LimeSurvey survey file(s){p_end}
 {synopt:{opt lsonly}}use just LimeSurvey survey file{p_end}
-{synopt:{opt save( )}}path and name of output file{p_end}
-{synopt:{opt replace}}overwrite existing file{p_end}
-{synopt:{opt panel}}not ready{p_end}
-{synopt:{opt lang:uage( )}}not ready{p_end}
+{synopt:{opt save()}}path and name of output file{p_end}
+{synopt:{opt replace}}overwrite existing output file{p_end}
+{synopt:{opt lang:uage()}}keep selected questionnaire language{p_end}
+{synopt:{opt noa:uto()}}suppress autodetection of connected variable names{p_end}
+{synopt:{opt var:pre()}}define list of prefixes of connected variable names{p_end}
 {synoptline}
 {p2colreset}{...}
 
 {marker description}{...}
 {title:Description}
 
-{pstd}{cmd:cbdata} creates a data set from one or more LimeSurvey structure survey
-files (and a Stata data set), which can be used to create a codebook with
-{cmd: {help: cbtex}}.{p_end}
-{pstd}If you don't define a {it:{help filename}}, the one in the memory will be
-used. If you don't define a directory with the option {opt: lspath()} where the
-LS files can be found, the working directory will be used.
-If you choose the option {opt lsonly} the data set will be created just from
-one or more LimeSurvey survey files. By default, multiple LS files are treated
-as parts of a single survey. With the (panel) option, the single  files are
-treated as separate survey waves to be marked as such in in the final
-questionnaire and differences can be described.{p_end}
-{pstd}{bf: Limitation} Variables are merged with their names,
-so they should not be changed.{p_end}
+{pstd}{cmd:cbdata} creates a dataset that can be used to create a codebook with
+{it:{help cbout}}. There are three possibilities of which data source the
+dataset can be generated from:{p_end}
+{pstd}{p_end}
 
+{p 8 8 2}1. Stata memory or .dta/.xls(x)-file only:{p_end}
+{p 12 12 2}Use data in memory or define a {it:{help filename}} with using{p_end}
+{pstd}{p_end}
 
-other-Variables from Stata needs to be named the same + with other in the end
+{p 8 8 2}2. LimeSurvey .txt structure file(s):{p_end}
+{p 12 12 2}Choose the folder that containts the LS structure files with
+{opt ls:path()} and define option {opt lsonly}. Multiple LS files are treated as
+parts of a single survey.{p_end}
+{pstd}{p_end}
 
-
-stonly -> if label -> tabulate, otherwise string or numeric
-
+{p 8 8 2}3. Combine Stata memory/.dta/.xls(x) and LimeSurvey .txt structure file:{p_end}
+{p 12 12 2}Use data in memory or define a {it:{help filename}} with using and
+choose the folder that containts the LS structure files with {opt ls:path()}.
+Variables are merged with their names, so they should not be changed.{p_end}
 
 {marker options_cbdata}{...}
 {title:Options for cbdata}
 
-{phang}{opt ls:path( )}
+{phang}{opt save()}
+
+{phang}{opt replace}
+
+
+{phang}{opt ls:path()}
 
 {phang}{opt lsonly}
 
@@ -74,13 +80,7 @@ if more subvars than 9 (count switch from 9 - 10), auto detect can't find all, n
 given stubnames will overwright auto detect and also find variables they are next to each other
 
 
-{phang}{opt save( )}
-
-{phang}{opt replace}
-
-{phang}{opt panel}
-
-{phang}{opt lang:uage( )}
+{phang}{opt lang:uage()}
 
 
 {marker examples}{...}
@@ -108,3 +108,8 @@ or notes:{p_end}
 WZB - Social Science Center Berlin.{p_end}
 {pstd}For additional information see
 {browse "https://github.com/StefanMunnes/CodebookGenerator":Github.}{p_end}
+
+
+
+other-Variables from Stata needs to be named the same + with other in the end
+stonly -> if label -> tabulate, otherwise string or numeric

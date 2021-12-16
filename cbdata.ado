@@ -6,7 +6,7 @@ program define cbdata, nclass
 
 syntax [using/], [LSpath(string) LANGuage(string) lsonly ///
   save(string) replace panel ///
-  VARstub(string) NOAuto]
+  varpre(string) NOAuto]
 
 version 12
 
@@ -25,15 +25,9 @@ if `"`using'"' != "" & `"`lsonly'"' != "" {
   exit 198
 }
 
-* error message if lsonly and varstub
-if `"`lsonly'"' != "" & `"`varstub'"' != "" {
-  noi di in red `"the option {opt varstub} is only usefull with  {opt stonly}"'
-  exit 198
-}
-
-* error message if lsonly and stonly
-if `"`lsonly'"' != "" & `"`stonly'"' != "" {
-  noi di in red `"Only one of the two options may be selected at the same time: {opt lsonly} or {opt stonly}"'
+* error message if lsonly and varpre
+if `"`lsonly'"' != "" & `"`varpre'"' != "" {
+  noi di in red `"the option {opt varpre} is only usefull when stata use only"'
   exit 198
 }
 
@@ -298,7 +292,7 @@ if `"`lsonly'"' == "" {
       * 1. use auto detect with length of one if not forbidden
       if "`noauto'" == "" {
 
-      	* extract stubname of subvar
+      	* extract prefix of subvar
       	gen auto_code 	= ustrright(name, 1) + "$"
       	gen auto_subvar = regexr(name, auto_code, "")
 
@@ -318,8 +312,8 @@ if `"`lsonly'"' == "" {
       	drop auto*
       }
 
-      * 2. loop over given varstubs to get subvar names
-      foreach var of local varstub {
+      * 2. loop over given varpres to get subvar names
+      foreach var of local varpre {
       	replace subvar = "`var'" if regexm(name, "^`var'")
       }
 
