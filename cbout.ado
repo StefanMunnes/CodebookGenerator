@@ -22,7 +22,7 @@ if `"`save'"' == "" {
 
 *  extract output format or error message if no valid file extension
 if regexm(`"`save'"', "(\.)(pdf$|docx$|tex$)") {
-	local output = regexs(2)
+  local output = regexs(2)
 }
 else {
   noi di in red "one of the following output formats must be defined: .pdf, .docx or .tex"
@@ -207,13 +207,13 @@ quietly {
 
     // add middle category
     replace `db'answer_code_`tblmid' = "..." if `db'answer_n > `tblmax' ///
-    	& !mi(`db'answer_n)
+      & !mi(`db'answer_n)
     replace `db'answer_text_`tblmid' = "..." if `db'answer_n > `tblmax' ///
-    	& !mi(`db'answer_n)
+      & !mi(`db'answer_n)
     capture: replace `db'answer_fltr_`tblmid' = "..." if `db'answer_n > `tblmax' ///
-    	& !mi(`db'answer_n)
+      & !mi(`db'answer_n)
     capture: replace `db'answer_freq_`tblmid' = . if `db'answer_n > `tblmax' ///
-    	& !mi(`db'answer_n)
+      & !mi(`db'answer_n)
 
     // loop over each row = variable
     local max = _N
@@ -222,22 +222,22 @@ quietly {
       // loop over half of max rows, to get end further forward, if more rows than max
       if `db'answer_n[`varnum'] > `tblmax' & !mi(`db'answer_n[`varnum']) {
 
-  			local var = variable[`varnum']
-  			display in red "List of answer options shortened for: `var'" // as text
+        local var = variable[`varnum']
+        display in red "List of answer options shortened for: `var'" // as text
 
         forval count = 1/`tblmax2' {
 
           local tbldiff = `db'answer_n[`varnum'] - `tblmax' // # of excess answers
-      		local tblend1 = `tblmid' + `count' //
-      		local tblend2 = `tblmid' + `tbldiff' + `count' - 1
+          local tblend1 = `tblmid' + `count' //
+          local tblend2 = `tblmid' + `tbldiff' + `count' - 1
 
-      		replace `db'answer_code_`tblend1' = `db'answer_code_`tblend2' if _n == `varnum'
-      		replace `db'answer_text_`tblend1' = `db'answer_text_`tblend2' if _n == `varnum'
-      		capture: replace `db'answer_fltr_`tblend1' = `db'answer_fltr_`tblend2' ///
+          replace `db'answer_code_`tblend1' = `db'answer_code_`tblend2' if _n == `varnum'
+          replace `db'answer_text_`tblend1' = `db'answer_text_`tblend2' if _n == `varnum'
+          capture: replace `db'answer_fltr_`tblend1' = `db'answer_fltr_`tblend2' ///
             if _n == `varnum'
-      		capture: replace `db'answer_freq_`tblend1' = `db'answer_freq_`tblend2' ///
+          capture: replace `db'answer_freq_`tblend1' = `db'answer_freq_`tblend2' ///
             if _n == `varnum'
-      	}
+        }
       }
     }
 
@@ -549,10 +549,10 @@ if "`output'" == "tex" {
     file write cb `"\subsection*{`title'}"' _n
 
     * create information table of variable characteristics
-  	file write cb "\begin{tabularx}{\textwidth}{p{2.5cm}X}" _n
+    file write cb "\begin{tabularx}{\textwidth}{p{2.5cm}X}" _n
 
     *** loop through default/choosen varlist of variable characteristics
-  	foreach cat of local varlist {
+    foreach cat of local varlist {
 
       local cat_str = `cat'[`var']
       if `"`cat_str'"' != "" & `"`cat_str'"' != "."  {
@@ -584,8 +584,8 @@ if "`output'" == "tex" {
     ***** loop for table of subvar and answer tables *****
     foreach mode in subvar `db'answer {
 
-  		* define mode specific label
-  		if "`mode'" == "subvar" 	  local mode_lab = `"`lab_var'"'
+      * define mode specific label
+      if "`mode'" == "subvar" 	  local mode_lab = `"`lab_var'"'
       if "`mode'" == "`db'answer" local mode_lab = `"`lab_cod'"'
 
       * check if subvar and answer available
@@ -802,7 +802,7 @@ else {
         put`output' table title_tbl(`tbl_row', 2) = (`_dta[note`num']'), font(, 16)
 
         * add extra row
-  			put`output' table title_tbl(`tbl_row', .), addrows(1) nosplit
+        put`output' table title_tbl(`tbl_row', .), addrows(1) nosplit
 
         local ++tbl_row
       }
@@ -816,7 +816,7 @@ else {
   local max = _N
   foreach var of numlist 1/`max' {
 
-  	display as text variable[`var']
+    display as text variable[`var']
 
     * write Welcome-/Endtext as section header
     if inlist(type[`var'], "WT", "ET") {
@@ -824,12 +824,12 @@ else {
       if type[`var'] == "ET" put`output' sectionbreak
       put`output' paragraph, spacing(after, .2cm)
       if type[`var'] == "WT" put`output' text ("`lab_bgn'"), bold font(, 22)
-    	if type[`var'] == "ET" put`output' text ("`lab_end'"), bold font(, 22)
+      if type[`var'] == "ET" put`output' text ("`lab_end'"), bold font(, 22)
 
       local text = text[`var']
 
       put`output' paragraph, spacing(after, 2cm)
-    	put`output' text (`"`text'"') //, font(, 14)
+      put`output' text (`"`text'"') //, font(, 14)
 
       continue // skip to next variable (row of loop)
     }
@@ -873,22 +873,22 @@ else {
     if `"`varlabel'"' != "" local title = `"`variable' - `varlabel'"'
     else local title = `"`variable'"'
 
-  	put`output' paragraph, spacing(after, .2cm)
-  	put`output' text ("`title'"), bold font(, 14)
+    put`output' paragraph, spacing(after, .2cm)
+    put`output' text ("`title'"), bold font(, 14)
 
     * initialize table for variable characteristics
-  	put`output' table tbl`var' = (1, 2), border(all, nil) width(100%) `tblopt_l'
+    put`output' table tbl`var' = (1, 2), border(all, nil) width(100%) `tblopt_l'
 
     * loop through default/choosen varlist of variable characteristics
     local row = 1 // initialize row counter
-  	foreach cat of local varlist {
+    foreach cat of local varlist {
 
       local cat_str = `cat'[`var']
-  		if `"`cat_str'"' != "" & `"`cat_str'"' != "." {
+      if `"`cat_str'"' != "" & `"`cat_str'"' != "." {
 
-  			* get label for output from variable label or varname if no label
-  			local cat_lab: variable label `cat'
-  			if "`cat_lab'" == "" local cat_lab = "`cat'"
+        * get label for output from variable label or varname if no label
+        local cat_lab: variable label `cat'
+        if "`cat_lab'" == "" local cat_lab = "`cat'"
 
         * add mandatoy and/or hidden to questiontype
         if "`cat'" == "type" & (mandatory[`var'] != "" | hidden[`var'] != "") {
@@ -904,54 +904,54 @@ else {
         * skip file write if N if statistics will be shown seperatly
         if "`cat'" == "N" & !mi(mean[`var']) continue
 
-  			* add variable characteristic label and values
-  			put`output' table tbl`var'(`row', 1) = ("`cat_lab'"), bold
-  			put`output' table tbl`var'(`row', 2) = (`"`cat_str'"')
+        * add variable characteristic label and values
+        put`output' table tbl`var'(`row', 1) = ("`cat_lab'"), bold
+        put`output' table tbl`var'(`row', 2) = (`"`cat_str'"')
 
         * add extra row
-  			put`output' table tbl`var'(`row', .), addrows(1) nosplit
+        put`output' table tbl`var'(`row', .), addrows(1) nosplit
 
-  			local ++row
-  		}
-  	}
+        local ++row
+      }
+    }
 
     put`output' table tbl`var'(`row', .), drop // remove last empty row
 
 
     ***** loop for table of subvar and answer tables *****
-  	foreach mode in subvar `db'answer {
+    foreach mode in subvar `db'answer {
 
-  		* define mode specific label
+      * define mode specific label
       if "`mode'" == "subvar" 	  local mode_lab = `"`lab_var'"'
       if "`mode'" == "`db'answer" local mode_lab = `"`lab_cod'"'
 
       * check if subvar and answer available
-  		if !mi(`mode'_n[`var']) & qtype[`var'] != ":" {
+      if !mi(`mode'_n[`var']) & qtype[`var'] != ":" {
 
         if `mode'_fltr_n[`var'] == 0 & `mode'_freq_1[`var'] == . local cond = 1
         if `mode'_fltr_n[`var'] >  0 & `mode'_freq_1[`var'] == . local cond = 2
         if `mode'_fltr_n[`var'] == 0 & `mode'_freq_1[`var'] < .  local cond = 3
         if `mode'_fltr_n[`var'] >  0 & `mode'_freq_1[`var'] < .  local cond = 4
 
-  			* create table (if filter 3 cols)
+        * create table (if filter 3 cols)
         if `cond' == 1 put`output' table tbl`mode'`var' = (1, 2), border(all, nil) width(100%) `tblopt_l'
         if `cond' == 2 put`output' table tbl`mode'`var' = (1, 3), border(all, nil) width(100%) `tblopt_l'
         if `cond' == 3 put`output' table tbl`mode'`var' = (1, 3), border(all, nil) width(100%) `tblopt_l'
         if `cond' == 4 put`output' table tbl`mode'`var' = (1, 4), border(all, nil) width(100%) `tblopt_l'
 
-  			* add table header (if filter 3 cols)
-  			put`output' table tbl`mode'`var'(1, 1) = ("`mode_lab'"), bold border(top) border(bottom)
-  			put`output' table tbl`mode'`var'(1, 2) = ("`lab_lab'"), bold border(top) border(bottom)
+        * add table header (if filter 3 cols)
+        put`output' table tbl`mode'`var'(1, 1) = ("`mode_lab'"), bold border(top) border(bottom)
+        put`output' table tbl`mode'`var'(1, 2) = ("`lab_lab'"), bold border(top) border(bottom)
         if `cond' == 2 put`output' table tbl`mode'`var'(1, 3) = ("Filter"), bold border(top) border(bottom)
         if `cond' == 3 put`output' table tbl`mode'`var'(1, 3) = ("N"), bold border(top) border(bottom)
         if `cond' == 4 put`output' table tbl`mode'`var'(1, 3) = ("N"), bold border(top) border(bottom)
         if `cond' == 4 put`output' table tbl`mode'`var'(1, 4) = ("Filter"), bold border(top) border(bottom)
 
-  			local tblrows = `mode'_n[`var'] + 1 // count max table rows (+ 1 b/c header)
+        local tblrows = `mode'_n[`var'] + 1 // count max table rows (+ 1 b/c header)
 
-  			forval tblrow = 2/`tblrows' {
+        forval tblrow = 2/`tblrows' {
 
-  				local row = `tblrow' - 1 // row = table row - header = # of subvar/answer
+          local row = `tblrow' - 1 // row = table row - header = # of subvar/answer
 
           * add row for each subvar/answer if not last row (every second colored background)
           if mod(`row', 2) == 0 put`output' table tbl`mode'`var'(`row',.), addrows(1) nosplit `tblopt_c' // odd
@@ -964,13 +964,13 @@ else {
           if `cond' == 3 put`output' table tbl`mode'`var'(`tblrow', 3) = (`mode'_freq_`row'[`var'])
           if `cond' == 4 put`output' table tbl`mode'`var'(`tblrow', 3) = (`mode'_freq_`row'[`var'])
           if `cond' == 4 put`output' table tbl`mode'`var'(`tblrow', 4) = (`mode'_fltr_`row'[`var'])
-  			}
+        }
 
         * add line at bottom if last row
         if mod(`tblrows', 2) == 0 put`output' table tbl`mode'`var'(`tblrows',.), border(bottom) nosplit `tblopt_c' // odd
         if mod(`tblrows', 2) == 1 put`output' table tbl`mode'`var'(`tblrows',.), border(bottom) nosplit // even
-  		}
-  	}
+      }
+    }
 
     *** create 2 tables for special two-way arrays
     if qtype[`var'] == ":" {

@@ -11,7 +11,7 @@ syntax [using/], [LSpath(string) LANGuage(string) lsonly ///
 version 12
 
 *-------------------------------------------------------------------------------
-pause on
+
 * error message if no using, empty dataset and not lsonly
 quietly: count
 if r(N) == 0 & `"`using'"' == "" & `"`lsonly'"' == "" {
@@ -48,6 +48,9 @@ if `"`panel'"' != "" & "`survey_n'" == "1" {
   noi di in red `"option {opt panel} is just allowed if multiple files where prepared"'
   exit 198
 } */
+
+* add lspath to current directory if lsonly and in same folder
+if `"`lsonly'"' != "" & `"`lspath'"' == "" local lspath = "."
 
 *-------------------------------------------------------------------------------
 
@@ -108,23 +111,23 @@ if `"`lsonly'"' == "" {
 
       foreach var of varlist * {
 
-      	* replace other categories -> as last value
-      	replace `var' = "zzzzz" if `var' == "-oth-"
+        * replace other categories -> as last value
+        replace `var' = "zzzzz" if `var' == "-oth-"
 
-      	* filter out string variables
-      	capture: tab `var', nofreq
-      	if ///
-      		`r(r)' < 30 & /// not more than 50 unique values
-      		!regexm("`var'", "other$") & /// not other in the end of varname
-      		real(regexr("`: type `var''", "str", "")) < 10 { // max length of value
+        * filter out string variables
+        capture: tab `var', nofreq
+        if ///
+          `r(r)' < 30 & /// not more than 50 unique values
+          !regexm("`var'", "other$") & /// not other in the end of varname
+          real(regexr("`: type `var''", "str", "")) < 10 { // max length of value
 
-      			encode `var', gen(`var'___str)
-      			drop `var'
-      			rename `var'___str `var'
-      	}
+            encode `var', gen(`var'___str)
+            drop `var'
+            rename `var'___str `var'
+        }
 
-      	* try to destring numeric variables (with more than 60 values)
-      	destring `var', replace
+        * try to destring numeric variables (with more than 60 values)
+        destring `var', replace
       }
 
       * order from saved varlist
@@ -153,15 +156,15 @@ if `"`lsonly'"' == "" {
 
     if "`r(varlist)'" != "" {
 
-    	tabstat `r(varlist)', s(count mean sd min max) col(stat) save
+      tabstat `r(varlist)', s(count mean sd min max) col(stat) save
 
-    	matrix matStat = r(StatTotal)
-    	matrix matStat = matStat'
+      matrix matStat = r(StatTotal)
+      matrix matStat = matStat'
     }
     else { // generate empty matrix to add strings if no numeric variables
 
-    	matrix matStat = J(1, 5, .)
-    	matrix colnames matStat = N mean sd min max
+      matrix matStat = J(1, 5, .)
+      matrix colnames matStat = N mean sd min max
     }
 
     * 2. for string variables (not important for excel)
@@ -169,12 +172,12 @@ if `"`lsonly'"' == "" {
 
     foreach var in `r(varlist)' {
 
-    	count if `var' != ""
+      count if `var' != ""
 
-    	matrix stat_`var' = r(N), ., ., ., .
-    	matrix rowname stat_`var' = `var'
+      matrix stat_`var' = r(N), ., ., ., .
+      matrix rowname stat_`var' = `var'
 
-    	matrix matStat = matStat \ stat_`var'
+      matrix matStat = matStat \ stat_`var'
     }
 
 
@@ -184,36 +187,36 @@ if `"`lsonly'"' == "" {
 
     foreach var of varlist * {
 
-    	if "`: value label `var''" != "" { // just value labeld variables
+      if "`: value label `var''" != "" { // just value labeld variables
 
-    		tab `var', matrow(code_`var') matcell(tab_`var') nofreq // miss
+        tab `var', matrow(code_`var') matcell(tab_`var') nofreq // miss
 
-    		capture: matrix tab_`var' = code_`var', tab_`var'
-    		if _rc == 0 {
+        capture: matrix tab_`var' = code_`var', tab_`var'
+        if _rc == 0 {
 
-    			matrix rownames tab_`var' = `var'
-    			matrix matTab = matTab \ tab_`var'
-    		}
-    	}
+          matrix rownames tab_`var' = `var'
+          matrix matTab = matTab \ tab_`var'
+        }
+      }
     }
 
 
     *** create temp stata files from matrices
     foreach mat in matStat matTab {
 
-    	clear
-    	svmat `mat', names(col)
+      clear
+      svmat `mat', names(col)
 
-    	* get names of variables by subsetting matrix rownames
-    	local names : rownames `mat'
-    	gen name = ""
+      * get names of variables by subsetting matrix rownames
+      local names : rownames `mat'
+      gen name = ""
 
-    	forvalues i = 1/`: word count `names'' {
-    		replace name = `"`: word `i' of `names''"' in `i'
-    	}
+      forvalues i = 1/`: word count `names'' {
+        replace name = `"`: word `i' of `names''"' in `i'
+      }
 
-    	tempfile data_`mat'
-    	save `data_`mat''
+      tempfile data_`mat'
+      save `data_`mat''
     }
 
     clear
@@ -233,7 +236,7 @@ if `"`lsonly'"' == "" {
 
     * fill empty slots with known informations
     foreach var of varlist label sttype format {
-    	bysort name (label): replace `var' = `var'[_N] if `var' == ""
+      bysort name (label): replace `var' = `var'[_N] if `var' == ""
     }
 
     * correct sorting (add small steps to smallest value in order of code)
@@ -259,9 +262,9 @@ if `"`lsonly'"' == "" {
     if `r(N)' > 0 {
       foreach num of numlist 1/`r(max)' {
 
-      	foreach part in code text freq {
-      		bysort name (stsort): gen stanswer_`part'_`num' = `part'[`num']
-      	}
+        foreach part in code text freq {
+          bysort name (stsort): gen stanswer_`part'_`num' = `part'[`num']
+        }
       }
     }
 
@@ -292,29 +295,29 @@ if `"`lsonly'"' == "" {
       * 1. use auto detect with length of one if not forbidden
       if "`noauto'" == "" {
 
-      	* extract prefix of subvar
-      	gen auto_code 	= ustrright(name, 1) + "$"
-      	gen auto_subvar = regexr(name, auto_code, "")
+        * extract prefix of subvar
+        gen auto_code 	= ustrright(name, 1) + "$"
+        gen auto_subvar = regexr(name, auto_code, "")
 
-      	* tag duplicates of non missing answer code & text
-      	duplicates t auto_subvar *_code_* *_text_* if !mi(stanswer_n), gen(auto_dup)
+        * tag duplicates of non missing answer code & text
+        duplicates t auto_subvar *_code_* *_text_* if !mi(stanswer_n), gen(auto_dup)
 
-      	sort stsort
+        sort stsort
 
-      	* mark as same if next to each other and duplicates
-      	gen auto_same = (auto_subvar == auto_subvar[_n + 1] | ///
-      									 auto_subvar == auto_subvar[_n - 1]) & ///
-      									!mi(auto_dup) & auto_dup > 0
+        * mark as same if next to each other and duplicates
+        gen auto_same = (auto_subvar == auto_subvar[_n + 1] | ///
+                         auto_subvar == auto_subvar[_n - 1]) & ///
+                        !mi(auto_dup) & auto_dup > 0
 
-      	* set subvar just if surring is same and empty
-      	replace subvar = auto_subvar if auto_same
+        * set subvar just if surring is same and empty
+        replace subvar = auto_subvar if auto_same
 
-      	drop auto*
+        drop auto*
       }
 
       * 2. loop over given varpres to get subvar names
       foreach var of local varpre {
-      	replace subvar = "`var'" if regexm(name, "^`var'")
+        replace subvar = "`var'" if regexm(name, "^`var'")
       }
 
       * 3. create wide format from subvar names
@@ -330,12 +333,12 @@ if `"`lsonly'"' == "" {
         sum subvar_n, mean
         forval num = 1/`r(max)' {
 
-        	bysort subvar (stsort): gen subvar_code_`num' = subvar_code[`num'] ///
-        		if subvar != ""
-        	bysort subvar (stsort): gen subvar_text_`num' = label[`num'] ///
-        		if subvar != ""
-        	capture: bysort subvar (stsort): gen subvar_freq_`num' = N[`num'] ///
-        		if subvar != ""
+          bysort subvar (stsort): gen subvar_code_`num' = subvar_code[`num'] ///
+            if subvar != ""
+          bysort subvar (stsort): gen subvar_text_`num' = label[`num'] ///
+            if subvar != ""
+          capture: bysort subvar (stsort): gen subvar_freq_`num' = N[`num'] ///
+            if subvar != ""
         }
 
         drop subvar_code
@@ -363,15 +366,15 @@ if `"`lsonly'"' == "" {
       replace sttype = "stL" if  mi(subvar_n) & !mi(stanswer_n)
       replace sttype = "stF" if !mi(subvar_n) & !mi(stanswer_n)
       replace sttype = "stM" if !mi(subvar_n) & ///
-      	((stanswer_n == 1 & stanswer_code_1 == "1") | ///
-      	 (stanswer_n == 2 & (stanswer_code_1 == "1" | stanswer_code_2 == "1")))
+        ((stanswer_n == 1 & stanswer_code_1 == "1") | ///
+         (stanswer_n == 2 & (stanswer_code_1 == "1" | stanswer_code_2 == "1")))
 
 
       *** keep just correct statistic informations
       sum stanswer_n, mean
       forval num = 1/`r(max)' {
 
-      	replace stanswer_freq_`num' = . if !mi(subvar_n)	// no answer freqs if subquestions
+        replace stanswer_freq_`num' = . if !mi(subvar_n)	// no answer freqs if subquestions
       }
 
       replace N = . if !mi(subvar_n) // no overall variable freqs if subquestions
@@ -414,7 +417,7 @@ if `"`lspath'"' != "" { //just if LimeSurvey path is given (not stonly)
     if `"`lspath'"' == "." local pathfile = "`file'"
     else local pathfile = "`lspath'/`file'"
 
-  	import delimited "`pathfile'", clear stringcols(_all) bindquotes(strict) ///
+    import delimited "`pathfile'", clear stringcols(_all) bindquotes(strict) ///
       maxquotedrows(unlimited) delimiters("\t") encoding("UTF-8")
 
     // if panel, save number of order for wave report in codebook
@@ -427,7 +430,7 @@ if `"`lspath'"' != "" { //just if LimeSurvey path is given (not stonly)
   clear
 
   forval i = 1/`nfile' {
-  	quietly: append using `lsdata`i''
+    quietly: append using `lsdata`i''
   }
 
   *-----------------------------------------------------------------------------
@@ -474,7 +477,7 @@ if `"`lspath'"' != "" { //just if LimeSurvey path is given (not stonly)
   // error message if not multiple languages or choosen one isn't part of LS dataset
   levelsof language, local(lslanguages)
   if strlen(`"`lslanguages'"') < 2 {
-	   noi display in red "There are no more languages to choose from."
+     noi display in red "There are no more languages to choose from."
      exit 198
   }
   else {
@@ -521,7 +524,7 @@ if `"`lspath'"' != "" { //just if LimeSurvey path is given (not stonly)
   replace	lssort1 = lssort1[_n - 1] if inlist(class, "SQ", "A")
 
   bysort subvar2 (lssort): gen lssort2 = lssort * real(lstype) + _n ///
-  	if inlist(class, "SQ", "A")
+    if inlist(class, "SQ", "A")
 
   replace lssort = lssort1 + (lssort2 / 10000) if inlist(class, "SQ", "A")
 
@@ -580,15 +583,15 @@ if `"`lspath'"' != "" { //just if LimeSurvey path is given (not stonly)
   * 2.3.2 clean up filter arguments
   replace filter = "" if filter == "1" // if no question-filter, delete 1
 
-	//replace filter = ustrregexra(filter, " Y", " 1 ")
-	//replace filter = ustrregexra(filter, " N", " 0 ")
-	replace filter = ustrregexra(filter, "&&", "and")
-	// replace filter = ustrregexra(filter, "^\(", "") ///
+  //replace filter = ustrregexra(filter, " Y", " 1 ")
+  //replace filter = ustrregexra(filter, " N", " 0 ")
+  replace filter = ustrregexra(filter, "&&", "and")
+  // replace filter = ustrregexra(filter, "^\(", "") ///
   //   if !regexm(filter, " or ")
-	// replace filter = ustrregexra(filter, "\)$", "") ///
+  // replace filter = ustrregexra(filter, "\)$", "") ///
   //   if !regexm(filter, " or ")
-	replace filter = ustrregexra(filter, ".NAOK", "")
-	replace filter = ustrregexra(filter, `"""', "")
+  replace filter = ustrregexra(filter, ".NAOK", "")
+  replace filter = ustrregexra(filter, `"""', "")
 
   replace filter = strtrim(filter)
 
@@ -749,8 +752,8 @@ if `"`lspath'"' != "" { //just if LimeSurvey path is given (not stonly)
       forval num = 1/`r(max)' {
 
         * replace freq with stanswer_freq if codes are the same
-      	bysort lsanswer (lssort): replace N = stanswer_freq_`num'[1] ///
-      		if stanswer_code_`num'[1] == name
+        bysort lsanswer (lssort): replace N = stanswer_freq_`num'[1] ///
+          if stanswer_code_`num'[1] == name
       }
     }
   }
@@ -873,7 +876,7 @@ if `"`lspath'"' != "" { //just if LimeSurvey path is given (not stonly)
 foreach var in varlabel filter text help other other_replace_text other_var ///
   random_group random_order validation mandatory prefix suffix hidden ///
   group grp_fltr grp_rand maximum_chars min_num_value_n max_num_value_n ///
-  date_format date_max date_min numbres_only other_numbers_only {
+  date_format date_max date_min numbres_only other_numbers_only default {
 
   capture: gen `var' = ""
 }
@@ -888,14 +891,14 @@ keep sort variable varlabel ??type filter text help ///
   subvar_* ??answer_* group grp_fltr grp_rand ///
   N mean sd min max ///
   other other_replace_text other_var other_freq ///
-  hidden random* validation mandatory prefix suffix survey ///
+  hidden random* validation mandatory prefix suffix survey default ///
   maximum_chars *_num_value_n date_* *_only drop_??
 
 order sort variable varlabel ??type filter text help ///
   subvar_* ??answer_* group grp_fltr grp_rand ///
   N mean sd min max ///
   other other_replace_text other_var other_freq ///
-  hidden random* validation mandatory prefix suffix survey ///
+  hidden random* validation mandatory prefix suffix survey default ///
   maximum_chars *_num_value_n date_* *_only drop_??
 
 
