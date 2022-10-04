@@ -580,7 +580,13 @@ if `"`lspath'"' != "" { //just if LimeSurvey path is given (not stonly)
   }
 
 
-  * 2.3.2 clean up filter arguments
+  * 2.3.2 remove variable adding from LS
+  foreach var of varlist text filter default {
+    replace `var' = ustrregexra(`var', ".NAOK", "")
+  }
+
+
+  * 2.3.3 clean up filter arguments
   replace filter = "" if filter == "1" // if no question-filter, delete 1
 
   //replace filter = ustrregexra(filter, " Y", " 1 ")
@@ -590,19 +596,26 @@ if `"`lspath'"' != "" { //just if LimeSurvey path is given (not stonly)
   //   if !regexm(filter, " or ")
   // replace filter = ustrregexra(filter, "\)$", "") ///
   //   if !regexm(filter, " or ")
-  replace filter = ustrregexra(filter, ".NAOK", "")
   replace filter = ustrregexra(filter, `"""', "")
 
   replace filter = strtrim(filter)
 
 
-  * 2.3.3 remove category separator
+  * 2.3.4 clean up default
+  replace default = regexr(default, "^{", "")
+  replace default = regexr(default, "}$", "")
+
+
+  * 2.3.5 remove category separator
   capture: replace category_separator = category_separator[_n - 1] if inlist(class, "SQ", "A")
   if _rc == 0 {
     replace category_separator = "^[ ]*[" + category_separator + "]" if category_separator != ""
     replace text = regexr(text, category_separator, "") if inlist(class, "SQ", "A") ///
       & category_separator != ""
   }
+
+  * 2.3.6 remove "Array" as placeholder in subquestions and answers
+  replace text = "" if text == "Array" & inlist(class, "SQ", "A")
 
   *---------------------------------------------------------------------------
 
